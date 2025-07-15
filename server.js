@@ -1,37 +1,47 @@
-const express = require("express");
-const bodyParser = require("body-parser");
-const sgMail = require("@sendgrid/mail");
-const path = require("path");
-
-sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+const express = require('express');
+const nodemailer = require('nodemailer');
+const path = require('path');
+require('dotenv').config();
 
 const app = express();
-app.use(bodyParser.json());
-app.use(express.static("public"));
+const PORT = process.env.PORT || 3000;
 
-app.post("/send-email", async (req, res) => {
+// Serve static files (your canvas HTML)
+app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.json());
+
+app.post('/send-email', async (req, res) => {
   const { email } = req.body;
 
   if (!email) {
-    return res.status(400).json({ message: "Email is required." });
+    return res.status(400).json({ message: 'No email provided.' });
   }
 
-  const msg = {
-    to: email,
-    from: "your_verified_sender@example.com",
-    subject: "Canvas Form Submission",
-    text: `You entered: ${email}`,
+  // Use your environment vars
+  let transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: process.env.GMAIL_USER, 
+      pass: process.env.GMAIL_PASS 
+    }
+  });
+
+  let mailOptions = {
+    from: process.env.GMAIL_USER,
+    to: process.env.RECIPIENT_EMAIL,
+    subject: 'Canvas Form Submission',
+    text: `User entered email: ${email}`
   };
 
   try {
-    await sgMail.send(msg);
-    res.json({ message: "Email sent successfully!" });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Failed to send email." });
+    await transporter.sendMail(mailOptions);
+    res.json({ message: 'Email sent successfully!' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Error sending email.' });
   }
 });
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
