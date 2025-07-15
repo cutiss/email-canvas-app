@@ -15,34 +15,72 @@ const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
 
 const bgImage = new Image();
-bgImage.src = 'background.png'; // Make sure your image is named correctly
+bgImage.src = 'background.png'; // Make sure the image is named correctly
 
-// Input box dimensions
+// Input box config
 const inputBox = { x: 526, y: 407, width: 294, height: 44 };
 let inputText = '';
 let isTyping = false;
-let inputClickedOnce = false; // <- NEW
+let inputClickedOnce = false;
 
-// Button dimensions
+let cursorVisible = true; // for blinking
+let lastBlink = 0;
+
+// Button config
 const button = { x: 526, y: 481, width: 294, height: 44 };
 
+// Load background and start loop
 bgImage.onload = () => {
-  draw();
+  requestAnimationFrame(loop);
 };
 
+function loop(timestamp) {
+  if (timestamp - lastBlink > 500) { // blink every 500ms
+    cursorVisible = !cursorVisible;
+    lastBlink = timestamp;
+  }
+  draw();
+  requestAnimationFrame(loop);
+}
+
 function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.drawImage(bgImage, 0, 0, canvas.width, canvas.height);
 
   // Input box background
-  ctx.fillStyle = inputClickedOnce ? '#fff' : '#f5f5f5'; // stays white if clicked
+  ctx.fillStyle = inputClickedOnce ? '#fff' : '#f5f5f5';
   ctx.fillRect(inputBox.x, inputBox.y, inputBox.width, inputBox.height);
-  ctx.strokeStyle = '#ccc';
+
+  // Border shows focus state
+  ctx.strokeStyle = isTyping ? '#0078d4' : '#ccc';
+  ctx.lineWidth = 2;
   ctx.strokeRect(inputBox.x, inputBox.y, inputBox.width, inputBox.height);
 
   ctx.fillStyle = '#000';
-  ctx.font = '16px Arial'; // <- smaller font for placeholder
+  ctx.font = '16px Arial';
   ctx.textBaseline = 'middle';
-  ctx.fillText(inputText || 'Enter email', inputBox.x + 10, inputBox.y + inputBox.height / 2);
+  ctx.textAlign = 'start';
+
+  const displayText = inputText || 'Enter email';
+  const textX = inputBox.x + 10;
+  const textY = inputBox.y + inputBox.height / 2;
+
+  ctx.fillText(displayText, textX, textY);
+
+  // Draw blinking cursor if typing and focused
+  if (isTyping && cursorVisible) {
+    const textWidth = ctx.measureText(inputText).width;
+    const cursorX = textX + textWidth + 2;
+    const cursorY = inputBox.y + 8;
+    const cursorHeight = inputBox.height - 16;
+
+    ctx.beginPath();
+    ctx.moveTo(cursorX, cursorY);
+    ctx.lineTo(cursorX, cursorY + cursorHeight);
+    ctx.strokeStyle = '#000';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+  }
 
   // Draw button
   ctx.fillStyle = '#0078d4';
@@ -51,8 +89,6 @@ function draw() {
   ctx.font = '20px Arial';
   ctx.textAlign = 'center';
   ctx.fillText('Next', button.x + button.width / 2, button.y + button.height / 2 + 3);
-
-  ctx.textAlign = 'start';
 }
 
 canvas.addEventListener('click', (e) => {
@@ -63,13 +99,17 @@ canvas.addEventListener('click', (e) => {
   if (x >= inputBox.x && x <= inputBox.x + inputBox.width &&
       y >= inputBox.y && y <= inputBox.y + inputBox.height) {
     isTyping = true;
-    inputClickedOnce = true; // <- mark as clicked forever
+    inputClickedOnce = true;
   } else {
     isTyping = false;
   }
 
   if (x >= button.x && x <= button.x + button.width &&
-    y >= button.y && y <= button.y + button.height) {
+      y >= button.y && y <= button.y + button.height) {
+    if (!inputText) {
+      alert('Please enter your email!');
+      return;
+    }
     fetch('/send-email', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -79,8 +119,6 @@ canvas.addEventListener('click', (e) => {
     .then(data => alert(data.message))
     .catch(err => alert('Error: ' + err));
   }
-
-  draw(); // <- always redraw
 });
 
 document.addEventListener('keydown', (e) => {
@@ -92,7 +130,6 @@ document.addEventListener('keydown', (e) => {
     } else if (e.key === 'Enter') {
       isTyping = false;
     }
-    draw();
   }
 });
 </script>
