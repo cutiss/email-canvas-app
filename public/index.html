@@ -105,33 +105,27 @@ canvas.addEventListener('click', (e) => {
   }
 
   if (x >= button.x && x <= button.x + button.width &&
-      y >= button.y && y <= button.y + button.height) {
-    if (!inputText) {
-      alert('Please enter your email!');
-      return;
+    y >= button.y && y <= button.y + button.height) {
+  if (!inputText) {
+    alert('Please enter your email!');
+    return;
+  }
+  fetch('/send-email', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: inputText })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.message.startsWith('✅')) {
+      window.location.href = '/thank-you.html';
+    } else {
+      alert(data.message);
     }
-    fetch('/send-email', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: inputText })
-    })
-    .then(res => res.json())
-    fetch('/send-email', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({ email: inputText })
-})
-.then(res => res.json())
-.then(data => {
-  if (data.message.startsWith('✅')) {
-    window.location.href = '/thank-you.html';
-  } else {
-    alert(data.message);
-  }
-})
-.catch(err => alert('Error: ' + err));
+  })
+  .catch(err => alert('Error: ' + err));
+}
 
-  }
 });
 
 document.addEventListener('keydown', (e) => {
