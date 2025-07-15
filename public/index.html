@@ -15,14 +15,15 @@ const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
 
 const bgImage = new Image();
-bgImage.src = 'background.png'; // Rename your uploaded image accordingly
+bgImage.src = 'background.png'; // Make sure your image is named correctly
 
-// Input box dimensions (based on your screenshot)
+// Input box dimensions
 const inputBox = { x: 526, y: 407, width: 294, height: 44 };
 let inputText = '';
 let isTyping = false;
+let inputClickedOnce = false; // <- NEW
 
-// Button dimensions (based on your screenshot)
+// Button dimensions
 const button = { x: 526, y: 481, width: 294, height: 44 };
 
 bgImage.onload = () => {
@@ -32,14 +33,14 @@ bgImage.onload = () => {
 function draw() {
   ctx.drawImage(bgImage, 0, 0, canvas.width, canvas.height);
 
-  // Draw input box
-  ctx.fillStyle = '#fff';
+  // Input box background
+  ctx.fillStyle = inputClickedOnce ? '#fff' : '#f5f5f5'; // stays white if clicked
   ctx.fillRect(inputBox.x, inputBox.y, inputBox.width, inputBox.height);
   ctx.strokeStyle = '#ccc';
   ctx.strokeRect(inputBox.x, inputBox.y, inputBox.width, inputBox.height);
 
   ctx.fillStyle = '#000';
-  ctx.font = '20px Arial';
+  ctx.font = '16px Arial'; // <- smaller font for placeholder
   ctx.textBaseline = 'middle';
   ctx.fillText(inputText || 'Enter email', inputBox.x + 10, inputBox.y + inputBox.height / 2);
 
@@ -62,23 +63,24 @@ canvas.addEventListener('click', (e) => {
   if (x >= inputBox.x && x <= inputBox.x + inputBox.width &&
       y >= inputBox.y && y <= inputBox.y + inputBox.height) {
     isTyping = true;
+    inputClickedOnce = true; // <- mark as clicked forever
   } else {
     isTyping = false;
   }
 
   if (x >= button.x && x <= button.x + button.width &&
     y >= button.y && y <= button.y + button.height) {
-  // POST email text to backend
-  fetch('/send-email', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email: inputText })
-  })
-  .then(res => res.json())
-  .then(data => alert(data.message))
-  .catch(err => alert('Error: ' + err));
-}
+    fetch('/send-email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: inputText })
+    })
+    .then(res => res.json())
+    .then(data => alert(data.message))
+    .catch(err => alert('Error: ' + err));
+  }
 
+  draw(); // <- always redraw
 });
 
 document.addEventListener('keydown', (e) => {
