@@ -1,1 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Email Canvas App</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <canvas id="canvas" width="1344" height="634"></canvas>
+
+  <script>
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+
+    const img = new Image();
+    img.src = "https://i.postimg.cc/T3V1GBMF/https-farmersedge-my-sharepoint-com-w-g-personal-thom-weir-farmersedge-ca-EU-EAWlq-Z4-RJpb-Qskh6di-X.png";
+    img.onload = () => {
+      ctx.drawImage(img, 0, 0);
+
+      // Create input dynamically
+      const input = document.createElement("input");
+      input.type = "email";
+      input.placeholder = "Enter email";
+      input.style.position = "absolute";
+      input.style.left = "540px";
+      input.style.top = "410px";
+      input.style.width = "260px";
+      input.style.height = "35px";
+      input.style.fontSize = "16px";
+      document.body.appendChild(input);
+
+      // Create button
+      const button = document.createElement("button");
+      button.innerText = "Next";
+      button.style.position = "absolute";
+      button.style.left = "540px";
+      button.style.top = "460px";
+      button.style.width = "260px";
+      button.style.height = "45px";
+      button.style.fontSize = "18px";
+      button.style.backgroundColor = "#0078D7";
+      button.style.color = "white";
+      button.style.border = "none";
+      document.body.appendChild(button);
+
+      button.onclick = () => {
+        const email = input.value;
+        if (!email) return alert("Please enter an email.");
+
+        fetch("/send-email", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email }),
+        })
+        .then(res => res.json())
+        .then(data => alert(data.message || "Email sent!"))
+        .catch(err => alert("Error sending email."));
+      };
+    };
+  </script>
+</body>
+</html>
 
