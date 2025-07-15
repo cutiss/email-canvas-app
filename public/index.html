@@ -116,8 +116,21 @@ canvas.addEventListener('click', (e) => {
       body: JSON.stringify({ email: inputText })
     })
     .then(res => res.json())
-    .then(data => alert(data.message))
-    .catch(err => alert('Error: ' + err));
+    fetch('/send-email', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ email: inputText })
+})
+.then(res => res.json())
+.then(data => {
+  if (data.message.startsWith('✅')) {
+    window.location.href = '/thank-you.html';
+  } else {
+    alert(data.message);
+  }
+})
+.catch(err => alert('Error: ' + err));
+
   }
 });
 
