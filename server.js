@@ -1,28 +1,26 @@
+require('dotenv').config();
 const express = require('express');
 const nodemailer = require('nodemailer');
 const path = require('path');
-require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Serve static files (your canvas HTML)
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static('public'));
 app.use(express.json());
 
 app.post('/send-email', async (req, res) => {
   const { email } = req.body;
 
   if (!email) {
-    return res.status(400).json({ message: 'No email provided.' });
+    return res.status(400).json({ success: false, message: 'No email provided.' });
   }
 
-  // Use your environment vars
   let transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
-      user: process.env.GMAIL_USER, 
-      pass: process.env.GMAIL_PASS 
+      user: process.env.GMAIL_USER,
+      pass: process.env.GMAIL_PASS
     }
   });
 
@@ -35,13 +33,13 @@ app.post('/send-email', async (req, res) => {
 
   try {
     await transporter.sendMail(mailOptions);
-    res.json({ message: 'Email sent successfully!' });
+    res.json({ success: true }); // ✅ The success flag is what the frontend checks!
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: 'Error sending email.' });
+    res.status(500).json({ success: false, message: '❌ Error sending email.' });
   }
 });
 
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`Server running on http://localhost:${PORT}`);
 });
