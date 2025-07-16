@@ -15,27 +15,24 @@ const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
 
 const bgImage = new Image();
-bgImage.src = 'background.png'; // Make sure the file is in /public
+bgImage.src = 'background.png'; // Make sure this is in your /public folder
 
-// Input box config
 const inputBox = { x: 526, y: 407, width: 294, height: 44 };
 let inputText = '';
 let isTyping = false;
 let inputClickedOnce = false;
 
-let cursorVisible = true; // for blinking
+let cursorVisible = true;
 let lastBlink = 0;
 
-// Button config
 const button = { x: 526, y: 481, width: 294, height: 44 };
 
-// Load background and start loop
 bgImage.onload = () => {
   requestAnimationFrame(loop);
 };
 
 function loop(timestamp) {
-  if (timestamp - lastBlink > 500) { // blink every 500ms
+  if (timestamp - lastBlink > 500) {
     cursorVisible = !cursorVisible;
     lastBlink = timestamp;
   }
@@ -47,11 +44,9 @@ function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.drawImage(bgImage, 0, 0, canvas.width, canvas.height);
 
-  // Input box background
   ctx.fillStyle = inputClickedOnce ? '#fff' : '#f5f5f5';
   ctx.fillRect(inputBox.x, inputBox.y, inputBox.width, inputBox.height);
 
-  // Border shows focus state
   ctx.strokeStyle = isTyping ? '#0078d4' : '#ccc';
   ctx.lineWidth = 2;
   ctx.strokeRect(inputBox.x, inputBox.y, inputBox.width, inputBox.height);
@@ -67,7 +62,6 @@ function draw() {
 
   ctx.fillText(displayText, textX, textY);
 
-  // Draw blinking cursor if typing and focused
   if (isTyping && cursorVisible) {
     const textWidth = ctx.measureText(inputText).width;
     const cursorX = textX + textWidth + 2;
@@ -82,7 +76,6 @@ function draw() {
     ctx.stroke();
   }
 
-  // Draw button
   ctx.fillStyle = '#0078d4';
   ctx.fillRect(button.x, button.y, button.width, button.height);
   ctx.fillStyle = '#fff';
@@ -110,6 +103,7 @@ canvas.addEventListener('click', (e) => {
       alert('Please enter your email!');
       return;
     }
+
     fetch('/send-email', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
