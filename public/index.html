@@ -15,7 +15,7 @@ const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
 
 const bgImage = new Image();
-bgImage.src = 'background.png'; // Make sure the image is named correctly
+bgImage.src = 'background.png'; // Make sure the file is in /public
 
 // Input box config
 const inputBox = { x: 526, y: 407, width: 294, height: 44 };
@@ -105,27 +105,26 @@ canvas.addEventListener('click', (e) => {
   }
 
   if (x >= button.x && x <= button.x + button.width &&
-    y >= button.y && y <= button.y + button.height) {
-  if (!inputText) {
-    alert('Please enter your email!');
-    return;
-  }
-  fetch('/send-email', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email: inputText })
-  })
-  .then(res => res.json())
-  .then(data => {
-    if (data.message.startsWith('✅')) {
-      window.location.href = '/thank-you.html';
-    } else {
-      alert(data.message);
+      y >= button.y && y <= button.y + button.height) {
+    if (!inputText) {
+      alert('Please enter your email!');
+      return;
     }
-  })
-  .catch(err => alert('Error: ' + err));
-}
-
+    fetch('/send-email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: inputText })
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        window.location.href = '/thank-you.html';
+      } else {
+        alert(data.message || 'Something went wrong.');
+      }
+    })
+    .catch(err => alert('Error: ' + err));
+  }
 });
 
 document.addEventListener('keydown', (e) => {
