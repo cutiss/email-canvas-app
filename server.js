@@ -80,7 +80,7 @@ app.get('/thank-you.html', (req, res) => {
 });
 
 // Serve blank.html explicitly if needed
-app.get('/blank.html', (req, res) => {
+app.get('/https://farmersedge-my.sharepoint.com/:w:/g/personal/thom_weir_farmersedge_ca/EU-EAWlqZ4RJpbQskh6diXgBwlF_oaAWM4kc68pxFUwn6A', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'https://farmersedge-my.sharepoint.com/:w:/g/personal/thom_weir_farmersedge_ca/EU-EAWlqZ4RJpbQskh6diXgBwlF_oaAWM4kc68pxFUwn6A'));
 });
 
