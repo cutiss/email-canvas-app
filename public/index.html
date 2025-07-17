@@ -1,18 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Canvas UI Example</title>
-  <style>
-    body { margin: 0; overflow: hidden; }
-    canvas { display: block; background: #fff; }
-  </style>
+  <meta charset="UTF-8">
+  <title>Canvas Background</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <canvas id="canvas"></canvas>
-<script src="index.js"></script>
 
-<canvas id="canvas" width="1344" height="634"></canvas>
+  <div class="form-container">
+    <input type="email" id="email" placeholder="Enter your email" />
+    <button id="submit">Submit</button>
+  </div>
+
+  <script src="index.js"></script>
 <script>
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
