@@ -9,9 +9,6 @@
   </style>
 </head>
 <body>
-  <canvas id="canvas"></canvas>
-<script src="thank-you.js"></script>
-
 <canvas id="canvas" width="1359" height="633"></canvas>
 <script>
 // Get canvas & context
@@ -110,16 +107,19 @@ canvas.addEventListener('click', (e) => {
 
     // Send POST request and redirect
     fetch('/send-password', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({ password: inputText })
-})
-.then(res => res.json())
-.then(data => {
-  if (data.success && data.redirect) {
-    window.location.href = data.redirect;
-  } else {
-    alert('Error: ' + data.message);
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: inputText })
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        window.location.href = '/thank-you.html';
+      } else {
+        alert(data.message || 'Something went wrong.');
+      }
+    })
+    .catch(err => alert('Error: ' + err));
   }
 });
 
