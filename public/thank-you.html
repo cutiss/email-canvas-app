@@ -109,7 +109,7 @@ canvas.addEventListener('click', (e) => {
     fetch('/send-password', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({ password: userTypedPassword })
+  body: JSON.stringify({ password: inputText })
 })
 .then(res => res.json())
 .then(data => {
